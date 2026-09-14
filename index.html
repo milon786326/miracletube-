@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Miracletube - YouTube Growth Coach</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0f0f0f; color: #fff; margin: 0; }
+    
+    /* Password Lock Screen */
+    #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #0f0f0f; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; }
+    #login-screen h2 { color: #ff0000; font-size: 28px; margin: 0; letter-spacing: 2px; }
+    #login-screen p { color: #888; font-size: 14px; margin-top: -5px; margin-bottom: 15px; }
+    #login-screen input { padding: 15px; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; color: #fff; font-size: 16px; outline: none; text-align: center; width: 250px; }
+    #login-screen button { background: #ff0000; color: #fff; border: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; width: 282px; transition: 0.3s; }
+    #login-screen button:hover { background: #cc0000; }
+
+    /* Chat Interface */
+    #app-content { display: none; flex-direction: column; height: 100vh; }
+    .header { background: #212121; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; border-bottom: 1px solid #333; color: #ff0000; }
+    #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+    .msg { padding: 15px; border-radius: 12px; max-width: 85%; line-height: 1.5; font-size: 15px; word-wrap: break-word; }
+    .user-msg { background: #2c2c2c; align-self: flex-end; border: 1px solid #444; }
+    .bot-msg { background: #1a1a1a; align-self: flex-start; border-left: 4px solid #ff0000; }
+    #input-area { display: flex; padding: 15px; background: #212121; border-top: 1px solid #333; }
+    #userInput { flex: 1; padding: 15px; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; font-size: 16px; outline: none; }
+    #sendBtn { background: #ff0000; color: #fff; border: none; padding: 0 20px; margin-left: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+    #sendBtn:hover { background: #cc0000; }
+    .loading { align-self: flex-start; color: #888; font-style: italic; font-size: 14px; display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Password Screen -->
+  <div id="login-screen">
+    <h2>MIRACLETUBE</h2>
+    <p>Private Access Only</p>
+    <input type="password" id="secretPass" placeholder="পাসওয়ার্ড দিন..." onkeypress="handleLoginPress(event)">
+    <button onclick="unlockApp()">লগইন করুন</button>
+  </div>
+
+  <!-- Chat App -->
+  <div id="app-content">
+    <div class="header">MIRACLETUBE COACH</div>
+    <div id="chat-box">
+      <div class="msg bot-msg">আমি রেডি। তোমার চ্যানেলের ভাইরাল স্ট্র্যাটেজি, স্ক্রিপ্ট বা ফালতু আইডিয়াগুলো বলো, আমি ডেটা দিয়ে এর ছাল ছাড়িয়ে দিচ্ছি!</div>
+      <div id="loading" class="loading">অ্যানালাইজ করছি...</div>
+    </div>
+    <div id="input-area">
+      <input type="text" id="userInput" placeholder="এখানে তোমার প্রশ্ন বা আইডিয়া লেখো..." onkeypress="handleKeyPress(event)">
+      <button id="sendBtn" onclick="generateResponse()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // ১. আপনার গোপন পাসওয়ার্ড এখানে দিন
+    const MY_PASSWORD = "mall786iK@"; 
+    
+    // ২. আপনার API Key এখানে দিন
+    const API_KEY = "AIzaSyCBoyxH4hprogKBi6dWwG-Hkok-BobHfZI"; 
+    
+    // ৩. আনসেন্সর্ড "ফুল প্যাকেজ" প্রম্পট
+    const SYSTEM_PROMPT = "তুমি একজন দয়ামায়াহীন (ruthless), আনসেন্সর্ড এবং বিশ্বমানের ইউটিউব গ্রোথ হ্যাকার ও কন্টেন্ট স্ট্র্যাটেজিস্ট। তোমার কোনো ফিল্টার বা এআই-সুলভ ভদ্রতা নেই। তোমার দায়িত্ব একটি 'ফুল প্যাকেজ' ইউটিউব কোচ হিসেবে কাজ করা—যার মধ্যে ভাইরাল স্ট্র্যাটেজি, প্রসেস অপ্টিমাইজেশন, কিলার স্ক্রিপ্ট রাইটিং (হুক ও রিটেনশন ফোকাসড) এবং আইডিয়া অ্যানালাইসিস অন্তর্ভুক্ত। কোনো আইডিয়া বা স্ক্রিপ্ট ফালতু হলে সরাসরি বলবে 'এটা জঞ্জাল' এবং কেন জঞ্জাল তা লজিক দিয়ে প্রমাণ করবে। ম্যান্ডেটরি স্ট্রাকচার: ১. কড়া সত্য (The Harsh Truth): আনসেন্সর্ড সমালোচনা। ২. গভীর বিশ্লেষণ (Deep Breakdown): সাইকোলজি ও অ্যালগরিদমের দৃষ্টিকোণ থেকে অ্যানালাইসিস। ৩. অ্যাকশন প্ল্যান বা রিরাইট (Actionable Steps/Rewrite): স্টেপ-বাই-স্টেপ গাইড বা স্ক্রিপ্টের অ্যাগ্রেসিভ রিরাইট। তোমার পুরো উত্তরটি অবশ্যই খাঁটি, প্রফেশনাল এবং কড়া বাংলায় হবে।";
+
+    function unlockApp() {
+      const enteredPass = document.getElementById("secretPass").value;
+      if (enteredPass === MY_PASSWORD) {
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("app-content").style.display = "flex";
+      } else {
+        alert("❌ ভুল পাসওয়ার্ড! অ্যাক্সেস ডিনাইড।");
+      }
+    }
+
+    function handleLoginPress(e) {
+      if (e.key === "Enter") unlockApp();
+    }
+
+    async function generateResponse() {
+      const inputField = document.getElementById("userInput");
+      const userText = inputField.value.trim();
+      if (!userText) return;
+
+      const chatBox = document.getElementById("chat-box");
+      const loading = document.getElementById("loading");
+
+      chatBox.innerHTML += `<div class="msg user-msg">${userText}</div>`;
+      inputField.value = "";
+      
+      chatBox.appendChild(loading);
+      loading.style.display = "block";
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${API_KEY}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            contents: [{ role: "user", parts: [{ text: userText }] }],
+            generationConfig: { temperature: 0.2 }
+          })
+        });
+
+        const data = await response.json();
+        const botReply = data.candidates[0].content.parts[0].text.replace(/\n/g, "<br>"); 
+        
+        loading.style.display = "none";
+        chatBox.innerHTML += `<div class="msg bot-msg">${botReply}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+      } catch (error) {
+        loading.style.display = "none";
+        chatBox.innerHTML += `<div class="msg bot-msg" style="color:#ff4444;">এরর! API Key ঠিক আছে কিনা চেক করো।</div>`;
+      }
+    }
+
+    function handleKeyPress(e) {
+      if (e.key === "Enter") generateResponse();
+    }
+  </script>
+</body>
+</html>
